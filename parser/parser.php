@@ -22,6 +22,53 @@ $code = new Code;
 $code->parseCode($input);
 $code->printCode();
 
+class Argument{
+    public $argType;
+    public $dataType;
+    public $value;
+
+    public function __construct($arg){
+        $splicedArg = explode("@",$arg,2);
+
+        switch(count($splicedArg)){
+            case 1:
+                $this->dataType = "label";
+                $this->value = $splicedArg[0];
+                break;
+            case 2:
+                $this->dataType = $splicedArg[0];
+                $this->value = $splicedArg[1];
+                break;
+        }
+
+        $this->getArgType();
+    }
+
+    public function __toString()
+    {
+        return "Data:" . $this->dataType . " ArgType:" . $this->argType . " Value:" . $this->value;
+    }
+
+    public function getArgType(){
+        switch($this->dataType){
+            case "Gf":
+            case "LF":
+            case "TF":
+                $this->argType = "var";
+                break;
+            case "int":
+            case "bool":
+            case "string":
+            case "nil":
+                $this->argType = "const";
+                break;
+            case "label":
+                $this->argType = "label";
+                break;
+        }
+    }
+}
+
 class Instruction{
     public $opcode;
     public $args = array();
@@ -29,17 +76,16 @@ class Instruction{
 
     public function __construct($opcode)
     {
-        //TODO: return number of expected args;
         $this->opcode = strtoupper($opcode);
 
-        switch(trim($this->opcode," \n\r\t\v\x00")){
+        switch(trim($this->opcode)){
             case ".IPPCODE23":
             case "CREATEFRAME":
             case "PUSHFRAME":
             case "POPFRAME":
             case "RETURN":
             case "BREAK":
-                $argsc = 0;
+                $this->argsc = 0;
                 break;
             case "DEFVAR":
             case "CALL":
@@ -50,13 +96,13 @@ class Instruction{
             case "JUMP":
             case "EXIT":
             case "DPRINT":
-                $argsc = 1;
+                $this->argsc = 1;
                 break;
             case "MOVE":
             case "INT2CHAR":
             case "READ":
             case "TYPE":
-                $argsc = 2;
+                $this->argsc = 2;
                 break;
             case "ADD":
             case "SUB":
@@ -74,7 +120,7 @@ class Instruction{
             case "SETCHAR":
             case "JUMPIFEQ":
             case "JUMPIFNEQ":
-                $argsc = 3;
+                $this->argsc = 3;
                 break;
             default:
             error_log("UNKNOWN INSTRUCTION: " . $this->opcode);
@@ -82,17 +128,42 @@ class Instruction{
         }
     }
 
-    public function addArg($arg){
-        if(count($args)<= $argc){
-            array_push($this->args,$arg);
+    public function parseArgs($argsIn){
+
+        if($argsIn == null){
+            if($this->argsc != 0){
+                exit(23);
+            }
+            return;
         }
-        else{
+
+        $args = explode(" ", $argsIn);
+        if(count($args) != $this->argsc){
             exit(23);
+        }
+
+        foreach($args as $arg){
+            $this->addArg($arg);
         }
     }
 
-    public function printInstruction(){
-        return "OPCODE:  $this->opcode ARGS:" . implode(" ",$this->args) . "\n";
+    public function addArg($argIn){
+        $arg = new Argument($argIn);
+        array_push($this->args,$arg);
+    }
+
+    public function __toString(){
+        return "OPCODE:  $this->opcode ARGS:" . $this->argsToString() . "\n";
+    }
+
+    private function argsToString(){
+        $args = "";
+        
+        foreach($this->args as $arg){
+            $args .= $arg->__toString();
+        }
+
+        return $args;
     }
 
 }
@@ -102,7 +173,7 @@ class Code {
 
     public function printCode(){
         foreach($this->instructions as $inst){
-            echo $inst->printInstruction();
+            echo $inst->__toString();
         }
     }
 
@@ -111,12 +182,25 @@ class Code {
         //PARSING LINES INTO INSTRUCTIONS LINE BY LINE
         foreach($input as $line){
 
-            //comment check
-            if($line == "" || $line[0] == "#"){
+            //Separate comments
+            $line = explode("#",$line,2);
+
+            //Separete whitespaces from end
+            $line[0] = rtrim($line[0]);
+
+            //skip empty
+            if($line[0] == ""){
                 continue;
             }
 
-            array_push($this->instructions,$this->parseInstruction($line));
+            array_push($this->instructions,$this->parseInstruction($line[0]));
+        }
+
+        $temp = array_shift($this->instructions);
+
+        if($temp->opcode != ".IPPCODE23"){
+            error_log("MISSING .IPPCODE HEADER");
+            exit(21);
         }
 
     }
@@ -124,25 +208,20 @@ class Code {
     private function parseInstruction($line){
 
         //Seperating the line into an array by the " " divider
-        $splicedLine = explode(" ",$line,3);
+        $splicedLine = explode(" ",$line,2);
 
         //Transforming array into an Argument
-        var_dump($splicedLine);
         $instruction = new Instruction($splicedLine[0]);
 
-        foreach($splicedLine as $arg){
-            if($arg != $instruction->opcode){
-                $instruction->addArg($arg);
-            }
-        }
+        count($splicedLine)==1?array_push($splicedLine,null):null;
+        $instruction->parseArgs($splicedLine[1]);
+        
         return $instruction;
     }
 }
 
-
 function printHelp(){
     print("printing help yeey");
 }
-
 
 ?>

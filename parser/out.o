@@ -1,54 +1,6 @@
-array(1) {
-  [0]=>
-  string(11) ".IPPcode23"
-}
-array(1) {
-  [0]=>
-  string(1) ""
-}
-array(3) {
-  [0]=>
-  string(11) "CREATEFRAME"
-  [1]=>
-  string(1) "#"
-  [2]=>
-  string(75) "příklad instrukce bez operandů, v XML možný zápis delším způsobem"
-}
-array(2) {
-  [0]=>
-  string(6) "DEFVAR"
-  [1]=>
-  string(5) "TF@x"
-}
-array(1) {
-  [0]=>
-  string(10) "PUSHFRAME"
-}
-array(1) {
-  [0]=>
-  string(12) "CREATEFRAME"
-}
-array(3) {
-  [0]=>
-  string(5) "WRITE"
-  [1]=>
-  string(4) "TF@x"
-  [2]=>
-  string(71) " # přístup k nedefinované proměnné, což se v parse.php neodhalí"
-}
-array(3) {
-  [0]=>
-  string(8) "POPFRAME"
-  [1]=>
-  string(1) "#"
-  [2]=>
-  string(82) "tato instrukce bude pro ilustraci ve výstupním XML zapsána kratším způsobem"
-}
-OPCODE:  .IPPcode23 ARGS:
-OPCODE:   ARGS:
-OPCODE:  CREATEFRAME ARGS:# příklad instrukce bez operandů, v XML možný zápis delším způsobem
-OPCODE:  DEFVAR ARGS:TF@x
-OPCODE:  PUSHFRAME ARGS:
-OPCODE:  CREATEFRAME ARGS:
-OPCODE:  WRITE ARGS:TF@x  # přístup k nedefinované proměnné, což se v parse.php neodhalí
-OPCODE:  POPFRAME ARGS:# tato instrukce bude pro ilustraci ve výstupním XML zapsána kratším způsobem
+OPCODE:  CREATEFRAME ARGS:
+OPCODE:  DEFVAR ARGS:Data:TF ArgType:var Value:x
+OPCODE:  PUSHFRAME ARGS:
+OPCODE:  CREATEFRAME ARGS:
+OPCODE:  WRITE ARGS:Data:TF ArgType:var Value:x
+OPCODE:  POPFRAME ARGS:
