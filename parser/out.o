@@ -1,6 +1,2 @@
-OPCODE:  CREATEFRAME ARGS:
-OPCODE:  DEFVAR ARGS:Data:TF ArgType:var Value:x
-OPCODE:  PUSHFRAME ARGS:
-OPCODE:  CREATEFRAME ARGS:
-OPCODE:  WRITE ARGS:Data:TF ArgType:var Value:x
-OPCODE:  POPFRAME ARGS:
+<?xml version="1.0"?>
+<program language="IPPcode23"><instruction order="1" opcode="CREATEFRAME"/><instruction order="2" opcode="DEFVAR"><arg1 type="var"/></instruction><instruction order="3" opcode="PUSHFRAME"/><instruction order="4" opcode="CREATEFRAME"/><instruction order="5" opcode="WRITE"><arg1 type="var"/></instruction><instruction order="6" opcode="POPFRAME"/></program>

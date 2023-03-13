@@ -1,5 +1,6 @@
 <?php
 
+ini_set('display_errors', 'stderr');
 
 // Parameter handling
 if($argc > 1){
@@ -44,6 +45,13 @@ class Argument{
         $this->getArgType();
     }
 
+    public function addArgToXML($instXML, $argCNT){
+        $argXML = $instXML->addChild("arg" . $argCNT,$this->value);
+        //$this->argGetType();
+        $argXML->addAttribute("type",$this->argType);
+        //$argXML = $this->value;
+    }
+
     public function __toString()
     {
         return "Data:" . $this->dataType . " ArgType:" . $this->argType . " Value:" . $this->value;
@@ -60,7 +68,7 @@ class Argument{
             case "bool":
             case "string":
             case "nil":
-                $this->argType = "const";
+                $this->argType = $this->dataType;
                 break;
             case "label":
                 $this->argType = "label";
@@ -132,13 +140,16 @@ class Instruction{
 
         if($argsIn == null){
             if($this->argsc != 0){
+                error_log("Wrong number of Arguments");
                 exit(23);
             }
             return;
         }
 
-        $args = explode(" ", $argsIn);
+        $args = preg_split("/[\s]+/",$argsIn,-1,PREG_SPLIT_NO_EMPTY);
+
         if(count($args) != $this->argsc){
+            error_log("Wrong number of Arguments");
             exit(23);
         }
 
@@ -150,6 +161,18 @@ class Instruction{
     public function addArg($argIn){
         $arg = new Argument($argIn);
         array_push($this->args,$arg);
+    }
+
+    public function addToXML($xml, $order){
+        $instXML = $xml->addChild("instruction");
+        $instXML->addAttribute("order", $order);
+        $instXML->addAttribute("opcode", $this->opcode);
+
+        $argCNT = 0;
+
+        foreach($this->args as $arg){
+            $arg->addArgToXML($instXML,++$argCNT);
+        }
     }
 
     public function __toString(){
@@ -169,15 +192,30 @@ class Instruction{
 }
 
 class Code {
+    
     public $instructions = array();
 
     public function printCode(){
+
+        $xml = new SimpleXMLElement("<program></program>");
+        $xml->addAttribute("language","IPPcode23");
+
+        $order = 0;
+
+        foreach($this->instructions as $inst){
+            $inst->addToXML($xml,++$order);
+        }
+
+        echo $xml->asXML();
+
+        /*
         foreach($this->instructions as $inst){
             echo $inst->__toString();
-        }
+        }*/
     }
 
     public function parseCode($input){
+        $hasHeader = false;
 
         //PARSING LINES INTO INSTRUCTIONS LINE BY LINE
         foreach($input as $line){
@@ -187,28 +225,40 @@ class Code {
 
             //Separete whitespaces from end
             $line[0] = rtrim($line[0]);
+            $line[0] = ltrim($line[0]);
 
             //skip empty
             if($line[0] == ""){
                 continue;
             }
 
+            if(!$hasHeader){
+                if(strtoupper($line[0]) == ".IPPCODE23"){
+                    $hasHeader = true;
+                    continue;
+                }
+                else{
+                    error_log("MISSING .IPPCODE HEADER");
+                    exit(21);
+                }
+            }
+
             array_push($this->instructions,$this->parseInstruction($line[0]));
         }
 
-        $temp = array_shift($this->instructions);
+        /*$temp = array_shift($this->instructions);
 
         if($temp->opcode != ".IPPCODE23"){
             error_log("MISSING .IPPCODE HEADER");
             exit(21);
-        }
+        }*/
 
     }
 
     private function parseInstruction($line){
 
         //Seperating the line into an array by the " " divider
-        $splicedLine = explode(" ",$line,2);
+        $splicedLine = preg_split("/[\s]+/",$line,2,PREG_SPLIT_NO_EMPTY);
 
         //Transforming array into an Argument
         $instruction = new Instruction($splicedLine[0]);
