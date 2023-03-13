@@ -46,7 +46,7 @@ class Argument{
     }
 
     public function addArgToXML($instXML, $argCNT){
-        $argXML = $instXML->addChild("arg" . $argCNT,$this->value);
+        $argXML = $instXML->addChild("arg" . $argCNT,$this->argType == "var"?$this->dataType."@".$this->value:$this->value);
         //$this->argGetType();
         $argXML->addAttribute("type",$this->argType);
         //$argXML = $this->value;
