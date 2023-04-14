@@ -1,2 +1,6 @@
 
+
 .vscode/launch.json
+parser/tester/
+parser/tests/
+*.zip
